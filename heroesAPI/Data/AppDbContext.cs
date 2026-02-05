@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using heroesAPI.Models;
 
 namespace heroesAPI.Data;
 public class AppDbContext : DbContext
@@ -21,8 +22,7 @@ public class AppDbContext : DbContext
 
     }
 
-    // public DbSet<Personaje> Personajes { get; set; }
-
+    public DbSet<Personaje> Personajes { get; set; }
 
 }
 
