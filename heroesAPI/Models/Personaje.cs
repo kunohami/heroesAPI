@@ -19,4 +19,32 @@ public abstract class Personaje
     // El campo JSON lo añadiremos posteriormente
 }
 
+[Table("Guerreros")]
+public class Guerrero : Personaje
+{
+    public string ArmaPrincipal { get; set; } = string.Empty;
+    public int Furia { get; set; }
+}
+
+[Table("Magos")]
+public class Mago : Personaje
+{
+    public int Mana { get; set; }
+    public string ElementoPrincipal { get; set; } = string.Empty;
+}
+
+[Table("Arqueros")]
+public class Arquero : Personaje
+{
+    public double Precision { get; set; }
+    public bool TieneMascota { get; set; }
+}
+
+[Table("Clerigos")]
+public class Clerigo : Personaje
+{
+    public string Deidad { get; set; } = string.Empty;
+    public int PuntosSanacion { get; set; }
+}
+
 
