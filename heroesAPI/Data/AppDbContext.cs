@@ -25,12 +25,6 @@ public class AppDbContext : DbContext
         
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        base.OnConfiguring(optionsBuilder);
-        optionsBuilder.UseNpgsql("Host=localhost;Port=5441;Database=heroesapi;SearchPath=heroescodefirst;Username=heroesuser;Password=Abcd1234");
-    }
-
     public DbSet<Personaje> Personajes { get; set; }
 
     public DbSet<Guerrero> Guerreros { get; set; }
