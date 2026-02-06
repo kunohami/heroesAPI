@@ -8,18 +8,21 @@ public abstract class Personaje
 {
     [Key]
     public int Id { get; set; }
-    [Required, MaxLength(50)]
+
+    [Required]
+    [MaxLength(50)]
     public string Nombre { get; set; } = string.Empty;
+
     [Range(1, 100)]
     public int Nivel { get; set; }
+
     [Required]
     public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
-    public string? Gremio { get; set; }
 
-    // El campo JSON que contiene los rasgos del personaje
-    [Required]
-    public string Rasgos { get; set; } = string.Empty;
+    public string? Gremio { get; set; } 
 
+    [Column(TypeName = "jsonb")]
+    public string? Rasgos { get; set; }
 }
 
 [Table("Guerreros")]
