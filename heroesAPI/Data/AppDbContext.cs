@@ -17,12 +17,12 @@ public class AppDbContext : DbContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema("heroescodefirst");
 
-        // Aquí configuraremos el JSON más adelante cuando descomentes la propiedad en el modelo
-        /*
+        // Aquí configuraremos el JSON 
+        
         modelBuilder.Entity<Personaje>()
             .Property(p => p.Rasgos)
             .HasColumnType("jsonb");
-        */
+        
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

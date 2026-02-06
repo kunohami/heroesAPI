@@ -16,7 +16,10 @@ public abstract class Personaje
     public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
     public string? Gremio { get; set; }
 
-    // El campo JSON lo añadiremos posteriormente
+    // El campo JSON que contiene los rasgos del personaje
+    [Required]
+    public string Rasgos { get; set; } = string.Empty;
+
 }
 
 [Table("Guerreros")]
