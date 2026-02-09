@@ -4,11 +4,12 @@ using System.Text.Json;
 using heroesAPI.Data;
 using heroesAPI.Models;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Configuración de Servicios (Swagger y DB)
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+object value = builder.Services.AddSwaggerGen();
 
 // Inyectar el DbContext leyendo la conexión del appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -21,7 +22,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(); // This requires Swashbuckle.AspNetCore.SwaggerUI namespace
 }
 
 app.UseHttpsRedirection();
@@ -109,3 +110,36 @@ app.MapDelete("/api/personajes/{id}", async (int id, AppDbContext db) =>
     await db.SaveChangesAsync();
     return Results.NoContent();
 });
+
+
+
+// 4. CONSULTAS COMPLEJAS 
+
+// Opción A: Buscar personajes que tengan un miedo específico en el JSON
+// Ejemplo de llamada: /api/consultas/buscar-miedo?miedo=Arañas
+app.MapGet("/api/consultas/buscar-miedo", async (string miedo, AppDbContext db) =>
+{
+    // Usamos FromSqlRaw para consultar dentro del JSONB de Postgres
+    // Nota: La sintaxis ->> obtiene el valor como texto
+    var result = await db.Personajes
+        .FromSqlRaw($"SELECT * FROM \"heroescodefirst\".\"Personajes\" WHERE \"Rasgos\" ->> 'MiedoA' = '{miedo}'")
+        .ToListAsync();
+
+    return result.Any() ? Results.Ok(result) : Results.NotFound("No se encontraron personajes con ese miedo.");
+});
+
+// Opción B: Obtener Magos y Clérigos de alto nivel (Multitabla)
+app.MapGet("/api/consultas/magos-clerigos-top", async (AppDbContext db) =>
+{
+    var magos = await db.Magos.Where(m => m.Nivel > 50).Cast<Personaje>().ToListAsync();
+    var clerigos = await db.Clerigos.Where(c => c.Nivel > 50).Cast<Personaje>().ToListAsync();
+
+    var union = magos.Concat(clerigos)
+        .OrderByDescending(p => p.Nivel)
+        .ToList();
+
+    return Results.Ok(union);
+});
+
+app.Run();
+
