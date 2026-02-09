@@ -6,18 +6,18 @@ using heroesAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configuración de Servicios (Swagger y DB)
+// 1. Configuraciï¿½n de Servicios (Swagger y DB)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Inyectar el DbContext leyendo la conexión del appsettings.json
+// Inyectar el DbContext leyendo la conexiï¿½n del appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
-// 2. Configuración del Pipeline HTTP
+// 2. Configuraciï¿½n del Pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -26,7 +26,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 3. DEFINICIÓN DE ENDPOINTS (Aquí está toda la lógica, sin Controllers)
+// 3. DEFINICIï¿½N DE ENDPOINTS (Aquï¿½ estï¿½ toda la lï¿½gica, sin Controllers)
 
 // --- GET: Obtener todos (Polimorfismo: trae magos, guerreros, etc.) ---
 app.MapGet("/api/personajes", async (AppDbContext db) =>
