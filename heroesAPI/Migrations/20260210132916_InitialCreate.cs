@@ -25,7 +25,8 @@ namespace heroesAPI.Migrations
                     Nombre = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Nivel = table.Column<int>(type: "integer", nullable: false),
                     FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Gremio = table.Column<string>(type: "text", nullable: true)
+                    Gremio = table.Column<string>(type: "text", nullable: true),
+                    Rasgos = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {

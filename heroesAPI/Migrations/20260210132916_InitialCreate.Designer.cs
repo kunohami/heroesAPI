@@ -12,7 +12,7 @@ using heroesAPI.Data;
 namespace heroesAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260206191923_InitialCreate")]
+    [Migration("20260210132916_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -47,6 +47,9 @@ namespace heroesAPI.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Rasgos")
+                        .HasColumnType("jsonb");
 
                     b.HasKey("Id");
 
