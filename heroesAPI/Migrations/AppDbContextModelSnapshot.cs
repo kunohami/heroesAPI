@@ -46,7 +46,6 @@ namespace heroesAPI.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<string>("Rasgos")
-                        .IsRequired()
                         .HasColumnType("jsonb");
 
                     b.HasKey("Id");
