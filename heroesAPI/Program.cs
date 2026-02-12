@@ -1,8 +1,9 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc; // Necesario para [FromBody], etc.
-using System.Text.Json;
 using heroesAPI.Data;
 using heroesAPI.Models;
+using Microsoft.AspNetCore.Mvc; // Necesario para [FromBody]
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Text.Json;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,7 +28,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 3. DEFINICIÓN DE ENDPOINTS (Aquí está toda la lógica, sin Controllers)
+// 3. DEFINICIÓN DE ENDPOINTS (lógica que normalmente estaría en controllers)
 
 // --- GET: Obtener todos (Polimorfismo: trae magos, guerreros, etc.) ---
 app.MapGet("/api/personajes", async (AppDbContext db) =>
@@ -119,13 +120,13 @@ app.MapDelete("/api/personajes/{id}", async (int id, AppDbContext db) =>
 // Ejemplo de llamada: /api/consultas/buscar-miedo?miedo=Arañas
 app.MapGet("/api/consultas/buscar-miedo", async (string miedo, AppDbContext db) =>
 {
-    // Usamos FromSqlRaw para consultar dentro del JSONB de Postgres
-    // Nota: La sintaxis ->> obtiene el valor como texto
+    // Use FromSqlInterpolated to pass 'miedo' as a parameter safely
     var result = await db.Personajes
-        .FromSqlRaw($"SELECT * FROM \"heroescodefirst\".\"Personajes\" WHERE \"Rasgos\" ->> 'MiedoA' = '{miedo}'")
+        .FromSqlInterpolated($@"SELECT * FROM ""heroescodefirst"".""Personajes""
+                               WHERE ""Rasgos"" ->> 'MiedoA' = {miedo}")
         .ToListAsync();
 
-    return result.Any() ? Results.Ok(result) : Results.NotFound("No se encontraron personajes con ese miedo.");
+return result.Any() ? Results.Ok(result) : Results.NotFound("No se encontraron personajes con ese miedo.");
 });
 
 // Opción B: Obtener Magos y Clérigos de alto nivel (Multitabla)

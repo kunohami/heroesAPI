@@ -24,6 +24,7 @@ public abstract class Personaje
     [Column(TypeName = "jsonb")]
     public string? Rasgos { get; set; }
 }
+// se pueden quitar las etiquetas table de cada clase hija, ya que se ha forzado el TPT en el OnModelCreating del DbContext,
 
 [Table("Guerreros")]
 public class Guerrero : Personaje
