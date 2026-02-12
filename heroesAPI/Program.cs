@@ -5,8 +5,19 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Text.Json;
 
+/// <summary>
+/// Configuración principal de la aplicación HeroesAPI.
+/// Este archivo define los servicios, el pipeline HTTP y los endpoints de la API.
+/// </summary>
+/// <author>Silvia Balmaseda & Rafael Robles</author>
 
 var builder = WebApplication.CreateBuilder(args);
+
+/// <summary>
+/// Configuración de servicios necesarios para la aplicación.
+/// Incluye la configuración de Swagger para la documentación y el DbContext para la base de datos.
+/// </summary>
+/// <author>Silvia Balmaseda</author>
 
 // 1. Configuración de Servicios (Swagger y DB)
 // Aquí se configuran los servicios que la aplicación necesita, como Swagger para la documentación
@@ -33,11 +44,17 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection(); // Redirige automáticamente las solicitudes HTTP a HTTPS
 
-// 3. DEFINICIÓN DE ENDPOINTS (lógica que normalmente estaría en controllers)
-// Aquí se definen los endpoints de la API. Cada endpoint maneja una ruta específica y una acción.
 
-// --- GET: Obtener todos los personajes (Polimorfismo: trae magos, guerreros, etc.) ---
-// Este endpoint devuelve todos los personajes, sin importar su tipo.
+
+/// <summary>
+/// Endpoints para obtener todos los personajes registrados y para añadir nuevos personajes de cada tipo (Guerrero, Mago, Arquero, Clérigo).
+/// Estos endpoints devuelven una lista polimórfica que incluye todas las subclases de Personaje.
+/// (lógica que normalmente estaría en controllers)
+/// </summary>
+/// <returns>Lista de personajes (Guerreros, Magos, Arqueros, Clérigos).</returns>
+/// <author>Silvia Balmaseda</author>
+
+
 app.MapGet("/api/personajes", async (AppDbContext db) =>
 {
     return await db.Personajes.ToListAsync();
@@ -89,8 +106,16 @@ app.MapPost("/api/personajes/clerigo", async (Clerigo clerigo, AppDbContext db) 
     return Results.Created($"/api/personajes/{clerigo.Id}", clerigo);
 });
 
-// --- PUT: Actualizar un personaje (Incluyendo el JSON) ---
-// Este endpoint permite actualizar los datos de un personaje existente, incluyendo su campo JSON "Rasgos".
+/// <summary>
+/// Put: Endpoint para actualizar los datos de un personaje existente.
+/// Permite modificar campos simples y el campo JSON "Rasgos".
+/// </summary>
+/// <param name="id">ID del personaje a actualizar.</param>
+/// <param name="body">Objeto JSON con los datos a actualizar.</param>
+/// <returns>Código 204 si la actualización fue exitosa, o 404 si el personaje no existe.</returns>
+/// <author>Silvia Balmaseda</author>
+
+
 app.MapPut("/api/personajes/{id}", async (int id, [FromBody] JsonElement body, AppDbContext db) =>
 {
     var personaje = await db.Personajes.FindAsync(id);
@@ -114,8 +139,13 @@ app.MapPut("/api/personajes/{id}", async (int id, [FromBody] JsonElement body, A
     return Results.NoContent();
 });
 
-// --- DELETE: Borrar un personaje ---
-// Este endpoint permite eliminar un personaje por su ID.
+/// <summary>
+/// Endpoint para eliminar un personaje por su ID.
+/// </summary>
+/// <param name="id">ID del personaje a eliminar.</param>
+/// <returns>Código 204 si la eliminación fue exitosa, o 404 si el personaje no existe.</returns>
+/// <author>Rafael Robles</author>
+
 app.MapDelete("/api/personajes/{id}", async (int id, AppDbContext db) =>
 {
     var personaje = await db.Personajes.FindAsync(id);
@@ -127,13 +157,15 @@ app.MapDelete("/api/personajes/{id}", async (int id, AppDbContext db) =>
 });
 
 
-
 // 4. CONSULTAS COMPLEJAS 
-// Aquí se definen consultas avanzadas que cumplen con los requisitos del enunciado.
 
-// Opción A: Buscar personajes que tengan un miedo específico en el JSON
-// Este endpoint busca personajes cuyo campo JSON "Rasgos" contenga un miedo específico.
-// Opción A: Buscar personajes que tengan un miedo específico en el JSON
+/// <summary>
+/// Endpoint para buscar personajes cuyo campo JSON "Rasgos" contenga un miedo específico.
+/// </summary>
+/// <param name="miedo">El miedo a buscar en el campo JSON "Rasgos".</param>
+/// <returns>Lista de personajes que tienen el miedo especificado, o un código 404 si no se encuentran coincidencias.</returns>
+/// <author>Rafael Robles</author>
+
 app.MapGet("/api/consultas/buscar-miedo", async (string miedo, AppDbContext db) =>
 {
     // PASO 1: Obtener solo los IDs usando SQL directo (Consultando el JSONB)
@@ -157,8 +189,13 @@ app.MapGet("/api/consultas/buscar-miedo", async (string miedo, AppDbContext db) 
     return Results.Ok(result);
 });
 
-// Opción B: Obtener Magos y Clérigos de alto nivel (Multitabla)
-// Este endpoint devuelve una lista de Magos y Clérigos con nivel mayor a 50, ordenados por nivel.
+/// <summary>
+/// Endpoint para obtener Magos y Clérigos con nivel mayor a 50.
+/// Los resultados se ordenan de forma descendente por nivel.
+/// </summary>
+/// <returns>Lista de Magos y Clérigos de alto nivel.</returns>
+/// <author>Rafael Robles</author>
+
 app.MapGet("/api/consultas/magos-clerigos-top", async (AppDbContext db) =>
 {
     var magos = await db.Magos.Where(m => m.Nivel > 50).Cast<Personaje>().ToListAsync();

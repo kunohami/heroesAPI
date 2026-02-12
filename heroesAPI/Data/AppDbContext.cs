@@ -3,8 +3,13 @@ using heroesAPI.Models;
 
 namespace heroesAPI.Data;
 
-// Clase que representa el contexto de la base de datos
-// Aquí se configuran las entidades y su mapeo a las tablas de la base de datos
+
+/// <summary>
+/// Contexto de la base de datos para la aplicación HeroesAPI.
+/// Configura las entidades y su mapeo a las tablas de la base de datos.
+/// </summary>
+/// <author>Silvia Balmaseda & Rafael Robles</author>
+
 public class AppDbContext : DbContext
 {
     // Constructor sin parámetros (usado en pruebas o configuraciones manuales)
@@ -16,8 +21,11 @@ public class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
+    /// <summary>
+    /// Configura el modelo de datos y las relaciones entre entidades.
+    /// </summary>
+    /// <author>Rafael Robles</author>
 
-    // Método para configurar el modelo de datos y las relaciones
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -39,8 +47,12 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Clerigo>().ToTable("Clerigos");
     }
 
-    // DbSet representa una tabla en la base de datos
-    // Tabla base para todos los personajes
+
+    /// <summary>
+    /// DbSets que representan las tablas de la base de datos para cada entidad.
+    /// </summary>
+    /// <author>Silvia Balmaseda</author>
+
     public DbSet<Personaje> Personajes { get; set; }
 
     // Tablas específicas para cada tipo de personaje
