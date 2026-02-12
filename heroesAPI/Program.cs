@@ -133,15 +133,28 @@ app.MapDelete("/api/personajes/{id}", async (int id, AppDbContext db) =>
 
 // Opción A: Buscar personajes que tengan un miedo específico en el JSON
 // Este endpoint busca personajes cuyo campo JSON "Rasgos" contenga un miedo específico.
+// Opción A: Buscar personajes que tengan un miedo específico en el JSON
 app.MapGet("/api/consultas/buscar-miedo", async (string miedo, AppDbContext db) =>
 {
-    // Use FromSqlInterpolated para pasar el parámetro de forma segura
-    var result = await db.Personajes
-        .FromSqlInterpolated($@"SELECT * FROM ""heroescodefirst"".""Personajes""
-                               WHERE ""Rasgos"" ->> 'MiedoA' = {miedo}")
+    // PASO 1: Obtener solo los IDs usando SQL directo (Consultando el JSONB)
+    // Usamos SqlQuery<int> porque devolver un tipo simple (int) SÍ está permitido
+    var ids = await db.Database
+        .SqlQuery<int>($@"
+            SELECT ""Id""
+            FROM ""heroescodefirst"".""Personajes""
+            WHERE ""Rasgos"" ->> 'MiedoA' = {miedo}")
         .ToListAsync();
 
-    return result.Any() ? Results.Ok(result) : Results.NotFound("No se encontraron personajes con ese miedo.");
+    // Si no hay nadie, terminamos rápido
+    if (!ids.Any()) return Results.NotFound("No se encontraron personajes con ese miedo.");
+
+    // PASO 2: Usar EF Core para cargar los objetos completos (Polimorfismo TPT)
+    // Al usar 'Contains', EF Core generará automáticamente los JOINS necesarios
+    var result = await db.Personajes
+        .Where(p => ids.Contains(p.Id))
+        .ToListAsync();
+
+    return Results.Ok(result);
 });
 
 // Opción B: Obtener Magos y Clérigos de alto nivel (Multitabla)
