@@ -20,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 /// <author>Silvia Balmaseda</author>
 
 // 1. Configuración de Servicios (Swagger y DB)
-// Aquí se configuran los servicios que la aplicación necesita, como Swagger para la documentación
+// Aquí se configuran los servicios que la aplicación necesita, como Swagger
 // y el DbContext para interactuar con la base de datos.
 builder.Services.AddEndpointsApiExplorer();
 object value = builder.Services.AddSwaggerGen();
@@ -57,7 +57,15 @@ app.UseHttpsRedirection(); // Redirige automáticamente las solicitudes HTTP a HT
 
 app.MapGet("/api/personajes", async (AppDbContext db) =>
 {
-    return await db.Personajes.ToListAsync();
+    try
+    {
+        var personajes = await db.Personajes.ToListAsync();
+        return Results.Ok(personajes);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Ocurrió un error al obtener los personajes: {ex.Message}", statusCode: 500);
+    }
 })
 .WithName("ObtenerTodosPersonajes");
 
@@ -65,8 +73,15 @@ app.MapGet("/api/personajes", async (AppDbContext db) =>
 // Este endpoint busca un personaje específico por su ID.
 app.MapGet("/api/personajes/{id}", async (int id, AppDbContext db) =>
 {
-    var personaje = await db.Personajes.FindAsync(id);
-    return personaje is not null ? Results.Ok(personaje) : Results.NotFound();
+    try
+    {
+        var personaje = await db.Personajes.FindAsync(id);
+        return personaje is not null ? Results.Ok(personaje) : Results.NotFound();
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Ocurrió un error al obtener el personaje: {ex.Message}", statusCode: 500);
+    }
 })
 .WithName("ObtenerPersonajePorId");
 
@@ -74,36 +89,80 @@ app.MapGet("/api/personajes/{id}", async (int id, AppDbContext db) =>
 // Este endpoint permite crear un nuevo Guerrero.
 app.MapPost("/api/personajes/guerrero", async (Guerrero guerrero, AppDbContext db) =>
 {
-    db.Guerreros.Add(guerrero);
-    await db.SaveChangesAsync();
-    return Results.Created($"/api/personajes/{guerrero.Id}", guerrero);
+    try
+    {
+        db.Guerreros.Add(guerrero);
+        await db.SaveChangesAsync();
+        return Results.Created($"/api/personajes/{guerrero.Id}", guerrero);
+    }
+    catch (DbUpdateException ex)
+    {
+        return Results.Problem($"Error al guardar el guerrero en la base de datos: {ex.InnerException?.Message}", statusCode: 500);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Ocurrió un error inesperado: {ex.Message}", statusCode: 500);
+    }
 });
 
 // --- POST: Crear un Mago ---
 // Este endpoint permite crear un nuevo Mago.
 app.MapPost("/api/personajes/mago", async (Mago mago, AppDbContext db) =>
 {
-    db.Magos.Add(mago);
-    await db.SaveChangesAsync();
-    return Results.Created($"/api/personajes/{mago.Id}", mago);
+    try
+    {
+        db.Magos.Add(mago);
+        await db.SaveChangesAsync();
+        return Results.Created($"/api/personajes/{mago.Id}", mago);
+    }
+    catch (DbUpdateException ex)
+    {
+        return Results.Problem($"Error al guardar el mago en la base de datos: {ex.InnerException?.Message}", statusCode: 500);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Ocurrió un error inesperado: {ex.Message}", statusCode: 500);
+    }
 });
 
 // --- POST: Crear un Arquero ---
 // Este endpoint permite crear un nuevo Arquero.
 app.MapPost("/api/personajes/arquero", async (Arquero arquero, AppDbContext db) =>
 {
-    db.Arqueros.Add(arquero);
-    await db.SaveChangesAsync();
-    return Results.Created($"/api/personajes/{arquero.Id}", arquero);
+    try
+    {
+        db.Arqueros.Add(arquero);
+        await db.SaveChangesAsync();
+        return Results.Created($"/api/personajes/{arquero.Id}", arquero);
+    }
+    catch (DbUpdateException ex)
+    {
+        return Results.Problem($"Error al guardar el arquero en la base de datos: {ex.InnerException?.Message}", statusCode: 500);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Ocurrió un error inesperado: {ex.Message}", statusCode: 500);
+    }
 });
 
 // --- POST: Crear un Clérigo ---
 // Este endpoint permite crear un nuevo Clérigo.
 app.MapPost("/api/personajes/clerigo", async (Clerigo clerigo, AppDbContext db) =>
 {
-    db.Clerigos.Add(clerigo);
-    await db.SaveChangesAsync();
-    return Results.Created($"/api/personajes/{clerigo.Id}", clerigo);
+    try
+    {
+        db.Clerigos.Add(clerigo);
+        await db.SaveChangesAsync();
+        return Results.Created($"/api/personajes/{clerigo.Id}", clerigo);
+    }
+    catch (DbUpdateException ex)
+    {
+        return Results.Problem($"Error al guardar el clérigo en la base de datos: {ex.InnerException?.Message}", statusCode: 500);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Ocurrió un error inesperado: {ex.Message}", statusCode: 500);
+    }
 });
 
 /// <summary>
@@ -118,25 +177,36 @@ app.MapPost("/api/personajes/clerigo", async (Clerigo clerigo, AppDbContext db) 
 
 app.MapPut("/api/personajes/{id}", async (int id, [FromBody] JsonElement body, AppDbContext db) =>
 {
-    var personaje = await db.Personajes.FindAsync(id);
-    if (personaje is null) return Results.NotFound();
+    try
+    {
+        var personaje = await db.Personajes.FindAsync(id);
+        if (personaje is null) return Results.NotFound();
 
-    // Actualizamos campos simples si existen en el JSON enviado
-    if (body.TryGetProperty("nombre", out var nombreVal))
-        personaje.Nombre = nombreVal.GetString()!;
+        // Actualizamos campos simples si existen en el JSON enviado
+        if (body.TryGetProperty("nombre", out var nombreVal))
+            personaje.Nombre = nombreVal.GetString()!;
 
-    if (body.TryGetProperty("nivel", out var nivelVal))
-        personaje.Nivel = nivelVal.GetInt32();
-
+        if (body.TryGetProperty("nivel", out var nivelVal))
+            personaje.Nivel = nivelVal.GetInt32();
+        
     // Actualizamos el JSON (Rasgos)
     // Convertimos el objeto JSON recibido a String para guardarlo en la propiedad string
-    if (body.TryGetProperty("rasgos", out var rasgosJson))
-    {
-        personaje.Rasgos = rasgosJson.GetRawText();
-    }
+        if (body.TryGetProperty("rasgos", out var rasgosJson))
+        {
+            personaje.Rasgos = rasgosJson.GetRawText();
+        }
 
-    await db.SaveChangesAsync();
-    return Results.NoContent();
+        await db.SaveChangesAsync();
+        return Results.NoContent();
+    }
+    catch (DbUpdateException ex)
+    {
+        return Results.Problem($"Error al actualizar el personaje: {ex.InnerException?.Message}", statusCode: 500);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Ocurrió un error inesperado: {ex.Message}", statusCode: 500);
+    }
 });
 
 /// <summary>
@@ -148,12 +218,23 @@ app.MapPut("/api/personajes/{id}", async (int id, [FromBody] JsonElement body, A
 
 app.MapDelete("/api/personajes/{id}", async (int id, AppDbContext db) =>
 {
-    var personaje = await db.Personajes.FindAsync(id);
-    if (personaje is null) return Results.NotFound();
+    try
+    {
+        var personaje = await db.Personajes.FindAsync(id);
+        if (personaje is null) return Results.NotFound();
 
-    db.Personajes.Remove(personaje);
-    await db.SaveChangesAsync();
-    return Results.NoContent();
+        db.Personajes.Remove(personaje);
+        await db.SaveChangesAsync();
+        return Results.NoContent();
+    }
+    catch (DbUpdateException ex)
+    {
+        return Results.Problem($"Error al eliminar el personaje: {ex.InnerException?.Message}", statusCode: 500);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Ocurrió un error inesperado: {ex.Message}", statusCode: 500);
+    }
 });
 
 
@@ -168,25 +249,32 @@ app.MapDelete("/api/personajes/{id}", async (int id, AppDbContext db) =>
 
 app.MapGet("/api/consultas/buscar-miedo", async (string miedo, AppDbContext db) =>
 {
-    // PASO 1: Obtener solo los IDs usando SQL directo (Consultando el JSONB)
-    // Usamos SqlQuery<int> porque devolver un tipo simple (int) SÍ está permitido
-    var ids = await db.Database
-        .SqlQuery<int>($@"
-            SELECT ""Id""
-            FROM ""heroescodefirst"".""Personajes""
-            WHERE ""Rasgos"" ->> 'MiedoA' = {miedo}")
-        .ToListAsync();
+    try
+    {
+        // PASO 1: Obtener solo los IDs usando SQL directo (Consultando el JSONB)
+        // Usamos SqlQuery<int> porque devolver un tipo simple (int) SÍ está permitido
+        var ids = await db.Database
+            .SqlQuery<int>($@"
+                SELECT ""Id""
+                FROM ""heroescodefirst"".""Personajes""
+                WHERE ""Rasgos"" ->> 'MiedoA' = {miedo}")
+            .ToListAsync();
 
-    // Si no hay nadie, terminamos rápido
-    if (!ids.Any()) return Results.NotFound("No se encontraron personajes con ese miedo.");
+        // Si no hay nadie, terminamos rápido
+        if (!ids.Any()) return Results.NotFound("No se encontraron personajes con ese miedo.");
 
-    // PASO 2: Usar EF Core para cargar los objetos completos (Polimorfismo TPT)
-    // Al usar 'Contains', EF Core generará automáticamente los JOINS necesarios
-    var result = await db.Personajes
-        .Where(p => ids.Contains(p.Id))
-        .ToListAsync();
+        // PASO 2: Usar EF Core para cargar los objetos completos (Polimorfismo TPT)
+        // Al usar 'Contains', EF Core generará automáticamente los JOINS necesarios
+        var result = await db.Personajes
+            .Where(p => ids.Contains(p.Id))
+            .ToListAsync();
 
-    return Results.Ok(result);
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Ocurrió un error en la consulta: {ex.Message}", statusCode: 500);
+    }
 });
 
 /// <summary>
@@ -198,14 +286,21 @@ app.MapGet("/api/consultas/buscar-miedo", async (string miedo, AppDbContext db) 
 
 app.MapGet("/api/consultas/magos-clerigos-top", async (AppDbContext db) =>
 {
-    var magos = await db.Magos.Where(m => m.Nivel > 50).Cast<Personaje>().ToListAsync();
-    var clerigos = await db.Clerigos.Where(c => c.Nivel > 50).Cast<Personaje>().ToListAsync();
+    try
+    {
+        var magos = await db.Magos.Where(m => m.Nivel > 50).Cast<Personaje>().ToListAsync();
+        var clerigos = await db.Clerigos.Where(c => c.Nivel > 50).Cast<Personaje>().ToListAsync();
 
-    var union = magos.Concat(clerigos)
-        .OrderByDescending(p => p.Nivel)
-        .ToList();
+        var union = magos.Concat(clerigos)
+            .OrderByDescending(p => p.Nivel)
+            .ToList();
 
-    return Results.Ok(union);
+        return Results.Ok(union);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Ocurrió un error en la consulta: {ex.Message}", statusCode: 500);
+    }
 });
 
 app.Run();

@@ -21,6 +21,58 @@ public class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
+
+    /// <summary>
+    /// Guarda los cambios en la base de datos y captura excepciones específicas de EF Core.
+    /// </summary>
+    /// <returns>El número de registros escritos en la base de datos.</returns>
+    /// <exception cref="Exception">Lanza una excepción genérica con detalles del error original.</exception>
+    /// <author>Rafael Robles</author>
+    public override int SaveChanges()
+    {
+        try
+        {
+            return base.SaveChanges();
+        }
+        catch (DbUpdateException ex)
+        {
+            // Captura errores de base de datos (Unique constraints, FKs, etc.)
+            throw new Exception($"Error de base de datos al guardar cambios: {ex.InnerException?.Message ?? ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            // Captura cualquier otro error inesperado
+            throw new Exception($"Error inesperado al guardar datos: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Versión asíncrona de SaveChanges con manejo de excepciones.
+    /// </summary>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>El número de registros escritos en la base de datos.</returns>
+    /// <author>Rafael Robles</author>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new Exception($"Error de base de datos al guardar cambios (Async): {ex.InnerException?.Message ?? ex.Message}", ex);
+        }
+        catch (OperationCanceledException)
+        {
+            // Si la operación fue cancelada, es normal relanzarla.
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Error inesperado al guardar datos (Async): {ex.Message}", ex);
+        }
+    }
+
     /// <summary>
     /// Configura el modelo de datos y las relaciones entre entidades.
     /// </summary>
